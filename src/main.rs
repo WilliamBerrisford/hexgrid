@@ -1,9 +1,9 @@
-use std::default;
-
-use ndarray::{Array3, iter};
+use ndarray::Array3;
 
 fn main() {
-    create_array(2, 2, 2);
+    let board = create_array(2, 2, 2);
+
+    println!("{:?}", board);
 }
 
 fn create_array(max_x: usize, max_y: usize, max_z: usize) -> Board {
@@ -18,8 +18,7 @@ fn create_array(max_x: usize, max_y: usize, max_z: usize) -> Board {
         }
     });
 
-    println!("Array {:?}", arr);
-    todo!();
+    Board { grid: arr }
 }
 
 #[derive(Debug)]
