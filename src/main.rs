@@ -1,20 +1,35 @@
-use ndarray::Array3;
+use ndarray::Array2;
 
 fn main() {
-    let board = create_array(2, 2, 2);
+    let board = create_hex_board(4);
 
     println!("{:?}", board);
 }
 
-fn create_array(max_x: usize, max_y: usize, max_z: usize) -> Board {
-    let mut arr: Array3<Hex> = Array3::<Hex>::from_elem((max_x, max_y, max_z), Hex::default());
+fn create_hex_board(dim: usize) -> Board {
+    let mut arr: Array2<Hex> =
+        Array2::<Hex>::from_elem(((2 * dim) + 1, (2 * dim) + 1), Hex::default());
     arr.indexed_iter_mut().for_each(|(index, hex)| {
-        *hex = Hex {
-            size: 1,
-            in_radius: 1,
-            x: index.0,
-            y: index.1,
-            z: index.2,
+        let dim = dim as i32;
+
+        let row = index.0 as i32 - dim;
+        let column = index.1 as i32 - dim;
+        let combined = column + row;
+
+        if -dim <= row
+            && row <= dim
+            && -dim <= column
+            && column <= dim
+            && -dim <= combined
+            && combined <= dim
+        {
+            *hex = Hex::Valid(ValidHex {
+                size: 1,
+                in_radius: 1,
+                x: row,
+                y: column,
+                z: -row - column, // TODO Error handling for too large dims
+            });
         }
     });
 
@@ -23,16 +38,23 @@ fn create_array(max_x: usize, max_y: usize, max_z: usize) -> Board {
 
 #[derive(Debug)]
 struct Board {
-    grid: Array3<Hex>,
+    grid: Array2<Hex>,
 }
 
 #[derive(Clone, Default, Debug)]
-struct Hex {
+enum Hex {
+    Valid(ValidHex),
+    #[default]
+    Invalid,
+}
+
+#[derive(Clone, Default, Debug)]
+struct ValidHex {
     size: i32,
     in_radius: i32,
-    x: usize,
-    y: usize,
-    z: usize,
+    x: i32,
+    y: i32,
+    z: i32,
 }
 
 #[cfg(test)]
@@ -41,13 +63,25 @@ mod tests {
 
     #[test]
     fn creating_boards() {
-        check_board(2, 2, 2);
-        check_board(99, 1, 3);
-        check_board(100, 100, 100);
+        check_board(2);
+        check_board(8);
+        check_board(99);
+        check_board(100);
     }
 
-    fn check_board(x: usize, y: usize, z: usize) {
-        let board = create_array(x, y, z);
-        assert_eq!(board.grid.dim(), (x, y, z));
+    fn check_board(x: usize) {
+        let board = create_hex_board(x);
+        board
+            .grid
+            .iter()
+            .filter_map(|hex| match hex {
+                Hex::Valid(valid_hex) => Some(valid_hex),
+                Hex::Invalid => None,
+            })
+            .for_each(|hex| {
+                dbg!(hex);
+                assert_eq!((-hex.x - hex.y), hex.z);
+                assert_eq!((hex.x + hex.y + hex.z), 0)
+            });
     }
 }
