@@ -34,3 +34,20 @@ struct Hex {
     y: usize,
     z: usize,
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn creating_boards() {
+        check_board(2, 2, 2);
+        check_board(99, 1, 3);
+        check_board(100, 100, 100);
+    }
+
+    fn check_board(x: usize, y: usize, z: usize) {
+        let board = create_array(x, y, z);
+        assert_eq!(board.grid.dim(), (x, y, z));
+    }
+}
