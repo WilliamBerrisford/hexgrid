@@ -43,8 +43,11 @@ pub enum Hex {
 impl ValidHex {
     // axial → odd-r offset (works for drawing only)
     fn to_offset(&self) -> (i32, i32) {
-        let col = self.q + (self.r - (self.r & 1)) / 2;
-        let row = self.r;
+        //let col = self.q + (self.r - (self.r & 1)) / 2;
+        //let row = self.r;
+        let col = 3 / 2 * self.q;
+        let row = ((f64::sqrt(3.0) / 2.0 * self.q as f64) + f64::sqrt(3.0) * self.r as f64).round()
+            as i32;
         (col, row)
     }
 
