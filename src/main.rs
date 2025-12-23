@@ -12,23 +12,17 @@ fn create_hex_board(dim: usize) -> Board {
     arr.indexed_iter_mut().for_each(|(index, hex)| {
         let dim = dim as i32;
 
-        let row = index.0 as i32 - dim;
-        let column = index.1 as i32 - dim;
-        let combined = column + row;
+        let q = index.0 as i32 - dim;
+        let r = index.1 as i32 - dim;
+        let s = r + q;
 
-        if -dim <= row
-            && row <= dim
-            && -dim <= column
-            && column <= dim
-            && -dim <= combined
-            && combined <= dim
-        {
+        if -dim <= q && q <= dim && -dim <= r && r <= dim && -dim <= s && s <= dim {
             *hex = Hex::Valid(ValidHex {
                 size: 1,
                 in_radius: 1,
-                x: row,
-                y: column,
-                z: -row - column, // TODO Error handling for too large dims
+                q,
+                r,
+                s: -q - r, // TODO Error handling for too large dims
             });
         }
     });
@@ -52,9 +46,9 @@ enum Hex {
 struct ValidHex {
     size: i32,
     in_radius: i32,
-    x: i32,
-    y: i32,
-    z: i32,
+    q: i32,
+    r: i32,
+    s: i32,
 }
 
 #[cfg(test)]
@@ -64,6 +58,7 @@ mod tests {
     #[test]
     fn creating_boards() {
         check_board(2);
+        check_board(5);
         check_board(8);
         check_board(99);
         check_board(100);
@@ -80,8 +75,8 @@ mod tests {
             })
             .for_each(|hex| {
                 dbg!(hex);
-                assert_eq!((-hex.x - hex.y), hex.z);
-                assert_eq!((hex.x + hex.y + hex.z), 0)
+                assert_eq!((-hex.q - hex.r), hex.s);
+                assert_eq!((hex.q + hex.r + hex.s), 0)
             });
     }
 }
